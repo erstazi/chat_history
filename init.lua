@@ -18,18 +18,18 @@ minetest.register_on_chat_message( function( sender, message )
 	end
 end )
 
-local old_chatcommand = minetest.chatcommands[ "msg" ].func
 
-minetest.chatcommands[ "msg" ].func = function( sender, param )
-	local recipient, message = string.match( param, "^([A-Za-z0-9_]+)%s(.+)$" )
-	if recipient and message then
-		minetest.sound_play( "mailbox_chime", { to_player = recipient, gain = 0.5, loop = false } )
-		table.insert( buffer, { sender = sender, recipient = recipient, time = os.time( ), message = message } )
-		if buffer_limit and #buffer > buffer_limit then
-			table.remove( buffer, 1 )
+if not minetest.get_modpath("jc_translate") then
+	local old_chatcommand = minetest.chatcommands["msg"].func
+
+	minetest.chatcommands["msg"].func = function(sender, param)
+		local recipient, message = string.match(param, "^([A-Za-z0-9_]+)%s(.+)$")
+		if recipient and message then
+			minetest.sound_play("mailbox_chime", {to_player = recipient, gain = 0.5, loop = false})
+			chat_history.add_message(sender, recipient, message)
 		end
+		return old_chatcommand(sender, param)
 	end
-	return old_chatcommand( sender, param )
 end
 
 local find_phrase = function( source, phrase )
